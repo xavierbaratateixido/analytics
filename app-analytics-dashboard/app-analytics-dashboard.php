@@ -26,22 +26,37 @@ if ( ! file_exists( AAD_LOG_FILE ) ) {
     touch( AAD_LOG_FILE );
 }
 
-// Load core classes explicitly to avoid autoloader issues on certain hosts.
-$aad_required_classes = array(
-    'class-settings-controller.php',
-    'class-apple-analytics-service.php',
-    'class-google-analytics-service.php',
-    'class-sync-manager.php',
-    'class-renderer.php',
-    'class-app-analytics-dashboard.php',
-);
+/**
+ * Ensures that all core plugin classes are loaded.
+ *
+ * Some hosting environments cache opcode aggressively or adjust include paths,
+ * which has resulted in the bootstrap running before the previous `require`
+ * statements have taken effect. By centralising the logic and checking for the
+ * class existence we can re-run the loader safely whenever needed.
+ */
+function aad_require_core_classes() {
+    $aad_required_classes = array(
+        'AAD_Settings_Controller'      => 'class-settings-controller.php',
+        'AAD_Apple_Analytics_Service'  => 'class-apple-analytics-service.php',
+        'AAD_Google_Analytics_Service' => 'class-google-analytics-service.php',
+        'AAD_Sync_Manager'             => 'class-sync-manager.php',
+        'AAD_Renderer'                 => 'class-renderer.php',
+        'AAD_App_Analytics_Dashboard'  => 'class-app-analytics-dashboard.php',
+    );
 
-foreach ( $aad_required_classes as $aad_required_class ) {
-    $aad_path = AAD_PLUGIN_PATH . '/includes/' . $aad_required_class;
-    if ( file_exists( $aad_path ) ) {
-        require_once $aad_path;
+    foreach ( $aad_required_classes as $aad_class => $aad_file ) {
+        if ( class_exists( $aad_class, false ) ) {
+            continue;
+        }
+
+        $aad_path = AAD_PLUGIN_PATH . '/includes/' . $aad_file;
+        if ( file_exists( $aad_path ) ) {
+            require_once $aad_path;
+        }
     }
 }
+
+aad_require_core_classes();
 
 register_activation_hook( __FILE__, 'aad_activate_plugin' );
 register_deactivation_hook( __FILE__, 'aad_deactivate_plugin' );
@@ -80,6 +95,8 @@ function aad_deactivate_plugin() {
 }
 
 add_action( 'plugins_loaded', static function () {
+    aad_require_core_classes();
+
     load_plugin_textdomain( 'app-analytics-dashboard', false, basename( dirname( __FILE__ ) ) . '/languages' );
 
     $settings_controller = new AAD_Settings_Controller();
