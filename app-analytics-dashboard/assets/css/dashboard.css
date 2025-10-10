@@ -1,0 +1,163 @@
+.app-analytics-dashboard .app-analytics-filters,
+.app-analytics-dashboard .app-analytics-actions,
+.app-analytics-dashboard .app-kpis,
+.app-analytics-dashboard .app-charts,
+.app-analytics-dashboard .app-tables,
+.app-analytics-dashboard .quality-grid,
+.app-analytics-dashboard .reviews-grid,
+.app-analytics-dashboard .revenue-overview,
+.app-analytics-dashboard .sync-actions {
+    margin: 20px 0;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.app-analytics-dashboard .app-analytics-filters label,
+.app-analytics-dashboard .app-analytics-filters select {
+    margin-right: 10px;
+}
+
+.app-analytics-dashboard .kpi {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 20px;
+    flex: 1 1 200px;
+}
+
+.app-analytics-dashboard .kpi .label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #6c7781;
+    margin-bottom: 10px;
+}
+
+.app-analytics-dashboard .kpi .value {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.app-analytics-dashboard .chart-card,
+.app-analytics-dashboard .table-card,
+.app-analytics-dashboard .quality-card,
+.app-analytics-dashboard .reviews-card,
+.app-analytics-dashboard .revenue-card {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 20px;
+    flex: 1 1 320px;
+    min-width: 300px;
+}
+
+.app-analytics-dashboard canvas {
+    width: 100% !important;
+    height: 320px !important;
+}
+
+.app-analytics-dashboard .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    text-transform: uppercase;
+    background: #0071a1;
+    color: #fff;
+    margin-right: 10px;
+}
+
+.app-analytics-dashboard .badge-google {
+    background: #34a853;
+}
+
+.app-analytics-dashboard .badge-apple {
+    background: #333;
+}
+
+.app-analytics-dashboard .tab-panel {
+    display: none;
+}
+
+.app-analytics-dashboard .tab-panel.active {
+    display: block;
+}
+
+.app-analytics-dashboard .connection-status {
+    margin-top: 10px;
+    padding: 10px;
+    border-left: 4px solid;
+    background: #f6f7f7;
+}
+
+.app-analytics-dashboard .status-ok {
+    border-color: #34a853;
+}
+
+.app-analytics-dashboard .status-error {
+    border-color: #d63638;
+}
+
+.app-analytics-dashboard .status-pending {
+    border-color: #dba617;
+}
+
+.app-analytics-dashboard .connection-status .timestamp {
+    display: inline-block;
+    margin-left: 10px;
+    color: #6c7781;
+    font-size: 12px;
+}
+
+.app-analytics-dashboard .sync-actions .button {
+    margin-right: 10px;
+}
+
+.app-analytics-dashboard textarea.widefat.code {
+    font-family: monospace;
+}
+
+.app-analytics-dashboard .app-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.app-analytics-dashboard .app-meta .identifier {
+    font-family: monospace;
+    color: #50575e;
+}
+
+.app-analytics-dashboard .app-meta .last-sync {
+    color: #6c7781;
+}
+
+.app-analytics-dashboard .app-analytics-actions .button {
+    margin-right: 10px;
+}
+
+.app-analytics-dashboard .bulk-actions {
+    margin-bottom: 10px;
+}
+
+.app-analytics-dashboard .store-field {
+    display: none;
+}
+
+@media (max-width: 782px) {
+    .app-analytics-dashboard .app-analytics-filters,
+    .app-analytics-dashboard .app-kpis,
+    .app-analytics-dashboard .app-charts,
+    .app-analytics-dashboard .app-tables,
+    .app-analytics-dashboard .quality-grid,
+    .app-analytics-dashboard .reviews-grid,
+    .app-analytics-dashboard .revenue-overview {
+        flex-direction: column;
+    }
+
+    .app-analytics-dashboard canvas {
+        height: 240px !important;
+    }
+}
