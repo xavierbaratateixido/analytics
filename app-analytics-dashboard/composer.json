@@ -1,0 +1,11 @@
+{
+    "name": "openai/app-analytics-dashboard",
+    "description": "WordPress plugin that surfaces App Store Connect and Google Play analytics dashboards.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4",
+        "google/apiclient": "^2.15",
+        "firebase/php-jwt": "^6.10"
+    }
+}
