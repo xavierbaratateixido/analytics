@@ -27,32 +27,50 @@ if ( ! file_exists( AAD_LOG_FILE ) ) {
 }
 
 /**
- * Ensures that all core plugin classes are loaded.
+ * Resolves class names to their file paths and provides an autoload fallback.
  *
  * Some hosting environments cache opcode aggressively or adjust include paths,
  * which has resulted in the bootstrap running before the previous `require`
- * statements have taken effect. By centralising the logic and checking for the
- * class existence we can re-run the loader safely whenever needed.
+ * statements have taken effect. Centralising the lookup lets us re-run the
+ * loader safely whenever needed while still supporting lazy autoloading.
  */
+function aad_load_class_file( $aad_class ) {
+    if ( 0 !== strpos( $aad_class, 'AAD_' ) ) {
+        return false;
+    }
+
+    $aad_filename = 'class-' . strtolower( str_replace( '_', '-', $aad_class ) ) . '.php';
+    $aad_path     = AAD_PLUGIN_PATH . '/includes/' . $aad_filename;
+
+    if ( file_exists( $aad_path ) ) {
+        require_once $aad_path;
+
+        return true;
+    }
+
+    return false;
+}
+
+spl_autoload_register( static function ( $aad_class ) {
+    aad_load_class_file( $aad_class );
+} );
+
 function aad_require_core_classes() {
     $aad_required_classes = array(
-        'AAD_Settings_Controller'      => 'class-settings-controller.php',
-        'AAD_Apple_Analytics_Service'  => 'class-apple-analytics-service.php',
-        'AAD_Google_Analytics_Service' => 'class-google-analytics-service.php',
-        'AAD_Sync_Manager'             => 'class-sync-manager.php',
-        'AAD_Renderer'                 => 'class-renderer.php',
-        'AAD_App_Analytics_Dashboard'  => 'class-app-analytics-dashboard.php',
+        'AAD_Settings_Controller',
+        'AAD_Apple_Analytics_Service',
+        'AAD_Google_Analytics_Service',
+        'AAD_Sync_Manager',
+        'AAD_Renderer',
+        'AAD_App_Analytics_Dashboard',
     );
 
-    foreach ( $aad_required_classes as $aad_class => $aad_file ) {
+    foreach ( $aad_required_classes as $aad_class ) {
         if ( class_exists( $aad_class, false ) ) {
             continue;
         }
 
-        $aad_path = AAD_PLUGIN_PATH . '/includes/' . $aad_file;
-        if ( file_exists( $aad_path ) ) {
-            require_once $aad_path;
-        }
+        aad_load_class_file( $aad_class );
     }
 }
 
