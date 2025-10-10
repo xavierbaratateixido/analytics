@@ -26,23 +26,22 @@ if ( ! file_exists( AAD_LOG_FILE ) ) {
     touch( AAD_LOG_FILE );
 }
 
-spl_autoload_register( static function ( $class ) {
-    if ( 0 !== strpos( $class, 'AAD_' ) ) {
-        return;
-    }
+// Load core classes explicitly to avoid autoloader issues on certain hosts.
+$aad_required_classes = array(
+    'class-settings-controller.php',
+    'class-apple-analytics-service.php',
+    'class-google-analytics-service.php',
+    'class-sync-manager.php',
+    'class-renderer.php',
+    'class-app-analytics-dashboard.php',
+);
 
-    $normalized = substr( $class, 4 ); // Remove the "AAD_" prefix.
-    if ( false === $normalized ) {
-        return;
+foreach ( $aad_required_classes as $aad_required_class ) {
+    $aad_path = AAD_PLUGIN_PATH . '/includes/' . $aad_required_class;
+    if ( file_exists( $aad_path ) ) {
+        require_once $aad_path;
     }
-
-    $filename = 'class-' . strtolower( str_replace( '_', '-', $normalized ) ) . '.php';
-    $filepath = AAD_PLUGIN_PATH . '/includes/' . $filename;
-
-    if ( file_exists( $filepath ) ) {
-        require_once $filepath;
-    }
-} );
+}
 
 register_activation_hook( __FILE__, 'aad_activate_plugin' );
 register_deactivation_hook( __FILE__, 'aad_deactivate_plugin' );
