@@ -96,6 +96,25 @@ las pruebas de un equipo, edita o vacía manualmente ese array desde Firestore.
 2. Abre `index.html` para los participantes y `admin.html` para el panel de administración.
 3. Crea las 14 pruebas desde el panel y comparte los accesos a los participantes.
 
+## ¿Cómo publicarlo en GitHub?
+
+Si todavía no tienes la web en GitHub, puedes subirla y, si lo deseas, exponerla con GitHub Pages siguiendo estos pasos:
+
+1. Crea un repositorio vacío en tu cuenta de GitHub (por ejemplo `halloween-jincana`).
+2. En tu máquina local, inicializa Git en la carpeta del proyecto y añade el remoto:
+   ```bash
+   git init
+   git remote add origin git@github.com:<tu-usuario>/halloween-jincana.git
+   git add .
+   git commit -m "Sube la jincana de Halloween"
+   git push -u origin main
+   ```
+   Si prefieres https, sustituye la URL del remoto por `https://github.com/<tu-usuario>/halloween-jincana.git`.
+3. (Opcional) Activa GitHub Pages en el repositorio: ve a **Settings → Pages**, elige la rama `main` y la carpeta `/ (root)` y guarda. En unos minutos tendrás una URL pública.
+4. Si usas GitHub Pages, accede a `https://<tu-usuario>.github.io/halloween-jincana/index.html` para los participantes y `.../admin.html` para el panel.
+
+> **Nota:** La configuración de Firebase o Supabase no se almacena automáticamente en GitHub. Asegúrate de que los archivos `assets/js/app.js` y `assets/js/admin.js` contienen las claves adecuadas antes de subirlos o configúralas como variables de entorno si usas un generador estático.
+
 ## Escáner QR
 
 La aplicación utiliza [html5-qrcode](https://github.com/mebjas/html5-qrcode) para leer pistas mediante la cámara del dispositivo. Asegúrate de que el navegador tenga permisos de cámara.
