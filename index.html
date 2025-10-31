@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jincana de Terror - Acceso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="https://unpkg.com/html5-qrcode" defer></script>
+</head>
+<body class="page page--login">
+  <div class="halloween-overlay" aria-hidden="true"></div>
+  <header class="site-header">
+    <h1>La Noche de los 14 Enigmas</h1>
+    <p class="tagline">Ingresa si te atreves... cada pista te acerca a la gloria o al terror.</p>
+  </header>
+
+  <main class="site-main">
+    <section class="auth-panel" id="auth-panel">
+      <h2>Acceso a la Jincana</h2>
+      <form id="login-form" class="form form--auth">
+        <label class="form__label" for="login-email">Correo</label>
+        <input class="form__input" type="email" id="login-email" autocomplete="email" required />
+
+        <label class="form__label" for="login-password">Contraseña</label>
+        <input class="form__input" type="password" id="login-password" autocomplete="current-password" required />
+
+        <button class="btn btn--primary" type="submit">Iniciar sesión</button>
+      </form>
+      <p class="auth-toggle">¿Primera vez? <button id="show-register" class="link-button" type="button">Regístrate aquí</button></p>
+      <form id="register-form" class="form form--auth form--hidden">
+        <h3>Crear participante</h3>
+        <label class="form__label" for="register-name">Nombre del equipo</label>
+        <input class="form__input" type="text" id="register-name" required />
+
+        <label class="form__label" for="register-email">Correo</label>
+        <input class="form__input" type="email" id="register-email" autocomplete="email" required />
+
+        <label class="form__label" for="register-password">Contraseña</label>
+        <input class="form__input" type="password" id="register-password" autocomplete="new-password" minlength="6" required />
+
+        <button class="btn btn--secondary" type="submit">Unirse a la jincana</button>
+      </form>
+    </section>
+
+    <section id="hunt-area" class="hunt-area hidden" aria-live="polite">
+      <div class="hunt-area__top-bar">
+        <div class="player-status">
+          <h2 id="player-name"></h2>
+          <p>Puntos: <span id="player-score">0</span> / <span id="total-challenges">14</span></p>
+        </div>
+        <button class="btn btn--ghost" id="logout-btn" type="button">Cerrar sesión</button>
+      </div>
+
+      <section class="scoreboard" aria-label="Clasificación en vivo">
+        <h3>Clasificación</h3>
+        <ul id="scoreboard-list" class="scoreboard__list"></ul>
+      </section>
+
+      <section class="challenge-grid" id="challenge-grid" aria-label="Desafíos disponibles">
+        <!-- Challanges render here -->
+      </section>
+    </section>
+  </main>
+
+  <div id="scanner-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="scanner-title">
+    <div class="modal__content">
+      <button class="modal__close" id="close-scanner" aria-label="Cerrar escáner">×</button>
+      <h2 id="scanner-title">Escanea el QR Maldito</h2>
+      <div id="scanner" class="scanner"></div>
+      <p id="scanner-message" class="scanner__message"></p>
+    </div>
+  </div>
+
+  <template id="challenge-template">
+    <article class="challenge-card">
+      <div class="challenge-card__media">
+        <img src="" alt="" class="challenge-card__image" loading="lazy" />
+        <span class="challenge-card__badge">Prueba <span class="challenge-number"></span></span>
+      </div>
+      <div class="challenge-card__body">
+        <h3 class="challenge-card__title"></h3>
+        <p class="challenge-card__description"></p>
+        <p class="challenge-card__announcement"></p>
+        <button class="btn btn--qr" type="button">Escanear pista</button>
+        <p class="challenge-card__hint challenge-card__hint--hidden"></p>
+        <div class="challenge-card__answer">
+          <label>
+            Respuesta
+            <input type="text" class="challenge-card__input" placeholder="Introduce tu solución" />
+          </label>
+          <button class="btn btn--submit" type="button">Enviar</button>
+        </div>
+        <p class="challenge-card__status" role="status"></p>
+      </div>
+    </article>
+  </template>
+
+  <script type="module" src="assets/js/app.js"></script>
+</body>
+</html>

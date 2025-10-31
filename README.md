@@ -1,0 +1,120 @@
+# Jincana de Halloween
+
+Aplicación web para gestionar una jincana de 14 pruebas con temática de Halloween. Permite el acceso de participantes mediante autenticación, resolución de pruebas con pistas a través de códigos QR y un panel de administración con creación de pruebas y analíticas en tiempo real.
+
+## Requisitos previos
+
+### Firebase (recomendado)
+1. Crea un proyecto en [Firebase Console](https://console.firebase.google.com/).
+2. Habilita **Authentication** con el proveedor de correo/contraseña.
+3. Habilita **Cloud Firestore** en modo de producción.
+4. Habilita **Storage** y crea una carpeta `challenges/` (se genera automáticamente al subir la primera imagen).
+5. Configura las reglas para permitir lecturas y escrituras autenticadas. Un ejemplo básico:
+   ```
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /challenges/{document=**} {
+         allow read: if request.auth != null;
+         allow write: if request.auth != null && request.auth.token.email in ["maestro@halloween.com"]; 
+       }
+       match /players/{document=**} {
+         allow read, write: if request.auth != null;
+       }
+     }
+   }
+   ```
+   Ajusta la lista de correos autorizados para administración en las reglas y en `assets/js/admin.js` (`ALLOWED_ADMIN_EMAILS`).
+6. Obtén la configuración web de Firebase (appId, apiKey, etc.) y reemplázala si fuese necesario en `assets/js/app.js` y `assets/js/admin.js`.
+
+### Supabase (opcional)
+Si prefieres Supabase:
+1. Crea un proyecto en [Supabase](https://supabase.com/).
+2. Habilita la autenticación por correo/contraseña.
+3. Crea tablas equivalentes a `challenges` y `players`. Por ejemplo:
+   ```sql
+   create table challenges (
+     id uuid primary key default gen_random_uuid(),
+     title text not null,
+     description text not null,
+     announcement text not null,
+     answer text not null,
+     qr_code_value text not null,
+     qr_hint text not null,
+     image_url text,
+     image_path text,
+     created_at timestamptz default now(),
+     updated_at timestamptz default now()
+   );
+
+   create table players (
+     id uuid primary key default auth.uid(),
+     name text,
+     email text,
+     score int default 0,
+     completed_challenges text[] default array[]::text[],
+     created_at timestamptz default now(),
+     updated_at timestamptz default now()
+   );
+   ```
+4. Crea políticas RLS que permitan lectura a usuarios autenticados y escritura solo a admins.
+5. Sustituye las importaciones de Firebase por el SDK de Supabase en ambos archivos JS.
+
+## Estructura
+
+- `index.html`: Portal de participantes con login, listado de pruebas y escáner QR.
+- `admin.html`: Panel de administración para crear pruebas y ver analíticas.
+- `assets/css/style.css`: Estilos con temática de Halloween.
+- `assets/js/app.js`: Lógica de participantes (autenticación, puntuaciones, escáner QR).
+- `assets/js/admin.js`: Lógica del panel administrador (gestión de pruebas y métricas).
+
+Cada participante recibe un conjunto aleatorio de hasta 14 pruebas. La selección queda registrada en su documento de `players`
+en el campo `assignedChallenges`, de modo que aunque recargue la página siempre verá la misma combinación. Si necesitas reasignar
+las pruebas de un equipo, edita o vacía manualmente ese array desde Firestore.
+
+## Panel de administración
+
+- **Crear y editar pruebas:** usa el formulario principal para definir título, anunciado, respuesta, código QR y fotografía.
+- **Eliminar pruebas:** cada tarjeta del listado incluye un botón para borrarla. Al eliminarla se limpia su imagen asociada del
+  almacenamiento de Firebase si existiese.
+- **Seguimiento en vivo:** el tablero de métricas indica participantes activos, puntuación total, pruebas resueltas y media de puntos.
+  La clasificación muestra por qué cada equipo lidera (puntuación y pruebas completadas).
+- **Gestión de participantes:** en la tabla puedes ver los puntos, pruebas superadas y hora de actualización de cada jugador. Haz clic en
+  "Ver detalle" para revisar qué enigmas tiene asignados y cuáles lleva resueltos.
+- **Reiniciar progreso:** el botón "Reiniciar" restablece los puntos del equipo, borra sus pruebas completadas y vacía su asignación.
+  En su siguiente acceso se le asignará un nuevo conjunto de desafíos disponible.
+
+## Personalización
+
+- Actualiza `ALLOWED_ADMIN_EMAILS` en `assets/js/admin.js` con los correos autorizados para administrar la jincana.
+- Sustituye la imagen de relleno en `assets/js/app.js` por la que prefieras como fallback.
+- Puedes añadir más campos a las pruebas editando tanto la interfaz como la estructura guardada en Firestore.
+
+## Puesta en marcha
+
+1. Sirve la carpeta del proyecto con cualquier servidor estático (por ejemplo `php -S localhost:8000` o `npx serve`).
+2. Abre `index.html` para los participantes y `admin.html` para el panel de administración.
+3. Crea las 14 pruebas desde el panel y comparte los accesos a los participantes.
+
+## ¿Cómo publicarlo en GitHub?
+
+Si todavía no tienes la web en GitHub, puedes subirla y, si lo deseas, exponerla con GitHub Pages siguiendo estos pasos:
+
+1. Crea un repositorio vacío en tu cuenta de GitHub (por ejemplo `halloween-jincana`).
+2. En tu máquina local, inicializa Git en la carpeta del proyecto y añade el remoto:
+   ```bash
+   git init
+   git remote add origin git@github.com:<tu-usuario>/halloween-jincana.git
+   git add .
+   git commit -m "Sube la jincana de Halloween"
+   git push -u origin main
+   ```
+   Si prefieres https, sustituye la URL del remoto por `https://github.com/<tu-usuario>/halloween-jincana.git`.
+3. (Opcional) Activa GitHub Pages en el repositorio: ve a **Settings → Pages**, elige la rama `main` y la carpeta `/ (root)` y guarda. En unos minutos tendrás una URL pública.
+4. Si usas GitHub Pages, accede a `https://<tu-usuario>.github.io/halloween-jincana/index.html` para los participantes y `.../admin.html` para el panel.
+
+> **Nota:** La configuración de Firebase o Supabase no se almacena automáticamente en GitHub. Asegúrate de que los archivos `assets/js/app.js` y `assets/js/admin.js` contienen las claves adecuadas antes de subirlos o configúralas como variables de entorno si usas un generador estático.
+
+## Escáner QR
+
+La aplicación utiliza [html5-qrcode](https://github.com/mebjas/html5-qrcode) para leer pistas mediante la cámara del dispositivo. Asegúrate de que el navegador tenga permisos de cámara.
