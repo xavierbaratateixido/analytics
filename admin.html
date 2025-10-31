@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel del Maestro de la Jincana</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body class="page page--admin">
+  <div class="halloween-overlay" aria-hidden="true"></div>
+  <header class="site-header">
+    <h1>Panel del Maestro de la Jincana</h1>
+    <p class="tagline">Controla la noche, libera las pruebas, vigila el terror.</p>
+  </header>
+
+  <main class="site-main">
+    <section class="auth-panel" id="admin-auth">
+      <h2>Acceso restringido</h2>
+      <form id="admin-login-form" class="form form--auth">
+        <label class="form__label" for="admin-email">Correo</label>
+        <input class="form__input" type="email" id="admin-email" required />
+        <label class="form__label" for="admin-password">Contraseña</label>
+        <input class="form__input" type="password" id="admin-password" required />
+        <button class="btn btn--primary" type="submit">Entrar al panel</button>
+      </form>
+    </section>
+
+    <section id="admin-panel" class="admin-panel hidden">
+      <div class="admin-panel__top-bar">
+        <div>
+          <h2>¡Bienvenido, Maestro!</h2>
+          <p>Dirige la jincana, crea pruebas y sigue la partida en vivo.</p>
+        </div>
+        <button class="btn btn--ghost" id="admin-logout" type="button">Cerrar sesión</button>
+      </div>
+
+      <section class="admin-grid">
+        <section class="admin-card admin-card--form" aria-label="Gestión de pruebas">
+          <h3>Crear / actualizar prueba</h3>
+          <form id="challenge-form" class="form form--stacked">
+            <input type="hidden" id="challenge-id" />
+            <label class="form__label" for="challenge-title">Título</label>
+            <input class="form__input" type="text" id="challenge-title" required />
+
+            <label class="form__label" for="challenge-description">Descripción</label>
+            <textarea class="form__textarea" id="challenge-description" rows="3" required></textarea>
+
+            <label class="form__label" for="challenge-announcement">Anunciado</label>
+            <textarea class="form__textarea" id="challenge-announcement" rows="2" required></textarea>
+
+            <label class="form__label" for="challenge-answer">Respuesta correcta</label>
+            <input class="form__input" type="text" id="challenge-answer" required />
+
+            <label class="form__label" for="challenge-qr-value">Código QR esperado</label>
+            <input class="form__input" type="text" id="challenge-qr-value" placeholder="Texto codificado en el QR" required />
+
+            <label class="form__label" for="challenge-qr-hint">Pista que se revela tras el QR</label>
+            <textarea class="form__textarea" id="challenge-qr-hint" rows="2" required></textarea>
+
+            <label class="form__label" for="challenge-image">Fotografía del participante</label>
+            <input class="form__input" type="file" id="challenge-image" accept="image/*" />
+            <p class="form__help">Puedes subir la fotografía del participante o pegar una URL existente.</p>
+
+            <label class="form__label" for="challenge-image-url">URL de la fotografía (opcional)</label>
+            <input class="form__input" type="url" id="challenge-image-url" placeholder="https://" />
+
+            <div class="form__actions">
+              <button class="btn btn--primary" type="submit">Guardar prueba</button>
+              <button class="btn btn--ghost" type="button" id="reset-form">Limpiar</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="admin-card admin-card--list" aria-label="Listado de pruebas">
+          <h3>Pruebas creadas</h3>
+          <ul id="admin-challenge-list" class="challenge-list"></ul>
+        </section>
+
+        <section class="admin-card admin-card--analytics" aria-label="Analíticas en tiempo real">
+          <h3>Estado de la jincana</h3>
+          <dl class="metrics">
+            <div>
+              <dt>Participantes activos</dt>
+              <dd id="metric-participants">0</dd>
+            </div>
+            <div>
+              <dt>Puntaje total</dt>
+              <dd id="metric-total-points">0</dd>
+            </div>
+            <div>
+              <dt>Pruebas completadas</dt>
+              <dd id="metric-completed">0</dd>
+            </div>
+            <div>
+              <dt>Promedio de puntos</dt>
+              <dd id="metric-average">0</dd>
+            </div>
+          </dl>
+          <h4>Clasificación</h4>
+          <ol id="admin-scoreboard" class="scoreboard__list scoreboard__list--ordered"></ol>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="assets/js/admin.js"></script>
+</body>
+</html>
