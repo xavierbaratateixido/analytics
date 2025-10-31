@@ -9,6 +9,7 @@ import {
   getFirestore,
   addDoc,
   collection,
+  deleteDoc,
   doc,
   onSnapshot,
   orderBy,
@@ -20,7 +21,8 @@ import {
   getStorage,
   ref,
   uploadBytes,
-  getDownloadURL
+  getDownloadURL,
+  deleteObject
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
 const firebaseConfig = {
@@ -53,10 +55,20 @@ const metricParticipants = document.getElementById('metric-participants');
 const metricTotalPoints = document.getElementById('metric-total-points');
 const metricCompleted = document.getElementById('metric-completed');
 const metricAverage = document.getElementById('metric-average');
+const playersTableBody = document.getElementById('players-table-body');
+const playerDetail = document.getElementById('player-detail');
+const playerDetailName = document.getElementById('player-detail-name');
+const playerDetailSubtitle = document.getElementById('player-detail-subtitle');
+const playerDetailList = document.getElementById('player-detail-list');
+const playerDetailClose = document.getElementById('player-detail-close');
 
 let challengesUnsubscribe = null;
 let playersUnsubscribe = null;
 let editingChallengeId = null;
+let playersCache = [];
+let activeDetailPlayerId = null;
+
+const challengeMap = new Map();
 
 adminLoginForm?.addEventListener('submit', async event => {
   event.preventDefault();
@@ -78,6 +90,41 @@ resetFormBtn?.addEventListener('click', () => {
   challengeForm.reset();
   editingChallengeId = null;
   document.getElementById('challenge-id').value = '';
+});
+
+playerDetailClose?.addEventListener('click', () => {
+  hidePlayerDetail();
+});
+
+playersTableBody?.addEventListener('click', async event => {
+  const target = event.target.closest('button');
+  if (!target) return;
+  const playerId = target.dataset.playerId;
+  if (!playerId) return;
+
+  if (target.classList.contains('js-view-player')) {
+    showPlayerDetail(playerId);
+    return;
+  }
+
+  if (target.classList.contains('js-reset-player')) {
+    await handleResetPlayer(playerId);
+  }
+});
+
+scoreboardList?.addEventListener('click', event => {
+  const item = event.target.closest('li');
+  if (!item) return;
+  const playerId = item.dataset.playerId;
+  if (playerId) {
+    showPlayerDetail(playerId);
+  }
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    hidePlayerDetail();
+  }
 });
 
 challengeForm?.addEventListener('submit', async event => {
@@ -158,11 +205,16 @@ function subscribeToChallenges() {
   challengesUnsubscribe = onSnapshot(q, snapshot => {
     const items = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
     renderChallengeList(items);
+    if (activeDetailPlayerId) {
+      // Vuelve a pintar el detalle con la información más reciente de las pruebas.
+      showPlayerDetail(activeDetailPlayerId);
+    }
   });
 }
 
 function renderChallengeList(items) {
   challengeList.innerHTML = '';
+  challengeMap.clear();
   if (!items.length) {
     const empty = document.createElement('li');
     empty.textContent = 'Aún no hay pruebas creadas.';
@@ -176,13 +228,28 @@ function renderChallengeList(items) {
     li.className = 'challenge-list__item';
     li.dataset.id = item.id;
     li.innerHTML = `
-      <span class="challenge-list__title">${item.title}</span>
-      <div class="challenge-list__meta">
-        <span>Respuesta: ${item.answer || '—'}</span>
-        <span>QR: ${item.qrCodeValue || '—'}</span>
+      <div class="challenge-list__info">
+        <span class="challenge-list__title">${item.title}</span>
+        <div class="challenge-list__meta">
+          <span>Respuesta: ${item.answer || '—'}</span>
+          <span>QR: ${item.qrCodeValue || '—'}</span>
+        </div>
+      </div>
+      <div class="challenge-list__actions">
+        <button type="button" class="btn-icon js-edit-challenge" aria-label="Editar ${item.title}">Editar</button>
+        <button type="button" class="btn-icon btn-icon--danger js-delete-challenge" aria-label="Eliminar ${item.title}">Eliminar</button>
       </div>
     `;
     li.addEventListener('click', () => populateForm(item));
+    li.querySelector('.js-edit-challenge').addEventListener('click', event => {
+      event.stopPropagation();
+      populateForm(item);
+    });
+    li.querySelector('.js-delete-challenge').addEventListener('click', async event => {
+      event.stopPropagation();
+      await handleDeleteChallenge(item);
+    });
+    challengeMap.set(item.id, item);
     challengeList.appendChild(li);
   });
 }
@@ -229,13 +296,185 @@ function renderPlayersAnalytics(players) {
     return aTime - bTime;
   });
 
+  playersCache = sorted;
+
   scoreboardList.innerHTML = '';
   sorted.forEach(player => {
     const li = document.createElement('li');
     li.className = 'scoreboard__item';
-    li.innerHTML = `<span>${player.name || 'Participante'}</span><span>${player.score || 0} pts</span>`;
+    li.dataset.playerId = player.id;
+    const completedChallenges = (player.completedChallenges || []).length;
+    const assigned = (player.assignedChallenges || []).length || '0';
+    li.innerHTML = `
+      <span>${player.name || 'Participante'}</span>
+      <span>${player.score || 0} pts · ${completedChallenges}/${assigned} pruebas</span>
+    `;
     scoreboardList.appendChild(li);
   });
+
+  renderPlayersTable(sorted);
+
+  if (activeDetailPlayerId) {
+    showPlayerDetail(activeDetailPlayerId);
+  }
+}
+
+function renderPlayersTable(players) {
+  if (!playersTableBody) return;
+  playersTableBody.innerHTML = '';
+
+  if (!players.length) {
+    const emptyRow = document.createElement('tr');
+    emptyRow.innerHTML = '<td colspan="5" class="table__empty">Aún no hay participantes registrados.</td>';
+    playersTableBody.appendChild(emptyRow);
+    hidePlayerDetail();
+    return;
+  }
+
+  players.forEach(player => {
+    const completedChallenges = player.completedChallenges ? player.completedChallenges.length : 0;
+    const assigned = player.assignedChallenges ? player.assignedChallenges.length : 0;
+    const lastUpdate = formatTimestamp(player.lastUpdate);
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td data-label="Participante">
+        <button type="button" class="link-button js-view-player" data-player-id="${player.id}">
+          ${player.name || 'Participante'}
+        </button>
+      </td>
+      <td data-label="Puntos">${player.score || 0}</td>
+      <td data-label="Pruebas superadas">${completedChallenges}/${assigned}</td>
+      <td data-label="Última actualización">${lastUpdate}</td>
+      <td data-label="Acciones" class="table__actions">
+        <div class="table__actions-wrapper">
+          <button type="button" class="btn btn--ghost btn--small js-view-player" data-player-id="${player.id}">Ver detalle</button>
+          <button type="button" class="btn btn--danger btn--small js-reset-player" data-player-id="${player.id}">Reiniciar</button>
+        </div>
+      </td>
+    `;
+    playersTableBody.appendChild(row);
+  });
+}
+
+async function handleDeleteChallenge(item) {
+  const confirmed = confirm(`¿Seguro que quieres eliminar la prueba "${item.title}"? Esta acción no se puede deshacer.`);
+  if (!confirmed) return;
+  try {
+    await deleteDoc(doc(db, 'challenges', item.id));
+    if (item.imagePath) {
+      try {
+        const storageRef = ref(storage, item.imagePath);
+        await deleteObject(storageRef);
+      } catch (storageError) {
+        console.warn('No se pudo eliminar la imagen de la prueba en Storage', storageError);
+      }
+    }
+  } catch (error) {
+    console.error('No se pudo eliminar la prueba', error);
+    alert('Ocurrió un error al eliminar la prueba. Intenta de nuevo.');
+  }
+}
+
+async function handleResetPlayer(playerId) {
+  const player = playersCache.find(candidate => candidate.id === playerId);
+  const playerName = player?.name || 'este participante';
+  const confirmed = confirm(`¿Reiniciar el progreso de ${playerName}? Se borrarán sus puntos y pruebas completadas.`);
+  if (!confirmed) return;
+
+  try {
+    await setDoc(
+      doc(db, 'players', playerId),
+      {
+        score: 0,
+        completedChallenges: [],
+        assignedChallenges: [],
+        lastUpdate: serverTimestamp()
+      },
+      { merge: true }
+    );
+    alert('Progreso reiniciado. El participante recibirá un nuevo conjunto de pruebas cuando vuelva a iniciar sesión.');
+  } catch (error) {
+    console.error('No se pudo reiniciar el progreso del participante', error);
+    alert('No se pudo reiniciar el progreso. Intenta nuevamente.');
+  }
+}
+
+function showPlayerDetail(playerId) {
+  if (!playerDetail || !playerDetailList) return;
+  const player = playersCache.find(candidate => candidate.id === playerId);
+  if (!player) {
+    hidePlayerDetail();
+    return;
+  }
+
+  activeDetailPlayerId = playerId;
+  playerDetail.classList.remove('hidden');
+  playerDetailName.textContent = player.name || 'Participante';
+
+  const completedSet = new Set(player.completedChallenges || []);
+  const assigned = player.assignedChallenges && player.assignedChallenges.length
+    ? player.assignedChallenges
+    : Array.from(challengeMap.keys());
+  const total = assigned.length;
+  const completed = completedSet.size;
+  const progressPercentage = total ? Math.round((completed / total) * 100) : 0;
+  playerDetailSubtitle.textContent = `${completed} de ${total || '0'} pruebas resueltas (${progressPercentage}% de avance)`;
+
+  playerDetailList.innerHTML = '';
+
+  if (!assigned.length) {
+    const item = document.createElement('li');
+    item.className = 'player-detail__item';
+    item.textContent = 'Aún no tiene pruebas asignadas.';
+    playerDetailList.appendChild(item);
+    return;
+  }
+
+  assigned.forEach((challengeId, index) => {
+    const challenge = challengeMap.get(challengeId);
+    const li = document.createElement('li');
+    li.className = 'player-detail__item';
+    if (completedSet.has(challengeId)) {
+      li.classList.add('is-completed');
+    }
+    const position = String(index + 1).padStart(2, '0');
+    const title = challenge?.title || 'Prueba eliminada';
+    li.innerHTML = `
+      <span class="player-detail__index">${position}</span>
+      <div class="player-detail__content">
+        <strong>${title}</strong>
+        <small>${challenge?.announcement || 'Sin anunciado disponible.'}</small>
+      </div>
+    `;
+    playerDetailList.appendChild(li);
+  });
+}
+
+function hidePlayerDetail() {
+  if (!playerDetail) return;
+  playerDetail.classList.add('hidden');
+  playerDetailList.innerHTML = '';
+  playerDetailName.textContent = '';
+  playerDetailSubtitle.textContent = '';
+  activeDetailPlayerId = null;
+}
+
+function formatTimestamp(timestamp) {
+  if (!timestamp?.toDate) {
+    return '—';
+  }
+  try {
+    const date = timestamp.toDate();
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  } catch (error) {
+    console.warn('No se pudo formatear la fecha de actualización', error);
+    return '—';
+  }
 }
 
 function toggleAdminUI(isAdmin) {

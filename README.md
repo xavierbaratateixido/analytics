@@ -72,6 +72,18 @@ Cada participante recibe un conjunto aleatorio de hasta 14 pruebas. La selecció
 en el campo `assignedChallenges`, de modo que aunque recargue la página siempre verá la misma combinación. Si necesitas reasignar
 las pruebas de un equipo, edita o vacía manualmente ese array desde Firestore.
 
+## Panel de administración
+
+- **Crear y editar pruebas:** usa el formulario principal para definir título, anunciado, respuesta, código QR y fotografía.
+- **Eliminar pruebas:** cada tarjeta del listado incluye un botón para borrarla. Al eliminarla se limpia su imagen asociada del
+  almacenamiento de Firebase si existiese.
+- **Seguimiento en vivo:** el tablero de métricas indica participantes activos, puntuación total, pruebas resueltas y media de puntos.
+  La clasificación muestra por qué cada equipo lidera (puntuación y pruebas completadas).
+- **Gestión de participantes:** en la tabla puedes ver los puntos, pruebas superadas y hora de actualización de cada jugador. Haz clic en
+  "Ver detalle" para revisar qué enigmas tiene asignados y cuáles lleva resueltos.
+- **Reiniciar progreso:** el botón "Reiniciar" restablece los puntos del equipo, borra sus pruebas completadas y vacía su asignación.
+  En su siguiente acceso se le asignará un nuevo conjunto de desafíos disponible.
+
 ## Personalización
 
 - Actualiza `ALLOWED_ADMIN_EMAILS` en `assets/js/admin.js` con los correos autorizados para administrar la jincana.

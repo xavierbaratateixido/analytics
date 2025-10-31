@@ -76,6 +76,7 @@
 
         <section class="admin-card admin-card--list" aria-label="Listado de pruebas">
           <h3>Pruebas creadas</h3>
+          <p class="section-subtitle">Haz clic para editar o elimina la prueba si necesitas reemplazarla.</p>
           <ul id="admin-challenge-list" class="challenge-list"></ul>
         </section>
 
@@ -101,6 +102,33 @@
           </dl>
           <h4>Clasificación</h4>
           <ol id="admin-scoreboard" class="scoreboard__list scoreboard__list--ordered"></ol>
+        </section>
+
+        <section class="admin-card admin-card--players" aria-label="Gestión de participantes">
+          <h3>Participantes y progreso</h3>
+          <p class="section-subtitle">Consulta qué pruebas ha resuelto cada equipo y reinicia su avance si necesitas reorganizar la partida.</p>
+          <div class="table-wrapper">
+            <table class="table players-table">
+              <thead>
+                <tr>
+                  <th scope="col">Participante</th>
+                  <th scope="col">Puntos</th>
+                  <th scope="col">Pruebas superadas</th>
+                  <th scope="col">Última actualización</th>
+                  <th scope="col" class="table__actions">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="players-table-body"></tbody>
+            </table>
+          </div>
+          <div id="player-detail" class="player-detail hidden" aria-live="polite">
+            <div class="player-detail__header">
+              <h4 id="player-detail-name"></h4>
+              <button id="player-detail-close" class="btn btn--ghost btn--small" type="button">Cerrar</button>
+            </div>
+            <p id="player-detail-subtitle" class="player-detail__subtitle"></p>
+            <ul id="player-detail-list" class="player-detail__list"></ul>
+          </div>
         </section>
       </section>
     </section>

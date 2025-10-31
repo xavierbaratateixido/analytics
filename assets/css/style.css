@@ -21,6 +21,7 @@
   --radius-sm: 0.75rem;
   --radius-md: 1.25rem;
   --radius-lg: 2rem;
+  --radius-pill: 999px;
   --shadow-lg: 0 30px 60px rgba(0, 0, 0, 0.6);
   --shadow-md: 0 20px 40px rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.35);
@@ -509,18 +510,34 @@ body::after {
 }
 
 .challenge-list__item {
-  display: grid;
-  gap: 0.3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
   padding: 0.8rem 1rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .challenge-list__item:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
+}
+
+.challenge-list__info {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.challenge-list__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.challenge-list__item button {
+  cursor: pointer;
 }
 
 .challenge-list__title {
@@ -556,6 +573,166 @@ body::after {
   margin: 0;
   font-size: 1.4rem;
   font-weight: 700;
+}
+
+.section-subtitle {
+  margin-top: 0.25rem;
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.btn-icon {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: var(--color-text);
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  padding: 0.35rem 0.85rem;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.btn-icon--danger {
+  border-color: rgba(245, 68, 90, 0.6);
+  color: #ff5f75;
+}
+
+.btn-icon--danger:hover {
+  background: rgba(245, 68, 90, 0.2);
+  color: #ff909f;
+}
+
+.btn--small {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-pill);
+}
+
+.btn--danger {
+  background: linear-gradient(135deg, #f5445a, #8d0e24);
+  border: none;
+  color: #fff;
+}
+
+.btn--danger:hover {
+  background: linear-gradient(135deg, #ff5f75, #a11330);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.table thead {
+  background: rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.table__actions {
+  text-align: right;
+}
+
+.table__actions-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.table__empty {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  color: var(--color-muted);
+}
+
+.players-table .link-button {
+  font-size: 0.95rem;
+}
+
+.player-detail {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  background: rgba(10, 8, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+.player-detail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.player-detail__subtitle {
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.player-detail__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.player-detail__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid transparent;
+}
+
+.player-detail__item.is-completed {
+  background: rgba(11, 134, 98, 0.15);
+  border-left-color: rgba(27, 201, 144, 0.8);
+}
+
+.player-detail__index {
+  font-family: 'Creepster', cursive;
+  font-size: 1.4rem;
+  color: var(--color-secondary);
+}
+
+.player-detail__content strong {
+  display: block;
+}
+
+.player-detail__content small {
+  color: var(--color-muted);
+  display: block;
 }
 
 .scoreboard__list--ordered {
